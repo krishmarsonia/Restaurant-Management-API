@@ -1,0 +1,44 @@
+let order = [{"name": "abc", quantity:3},{"name": "def", quantity:4}];
+
+let corder = [{"name": "thy", quantity:2},{"name": "def", quantity:2},{"name": "abc", quantity:6}]
+
+corder.map((item) => {
+let prodid = order.findIndex((ci) => ci.name === item.name);
+if(prodid !== -1){
+order[prodid].quantity = order[prodid].quantity + item.quantity;
+}
+})
+
+console.log(order);
+
+
+
+
+// Order.find({ table: tableId })
+          //   .then(async (orderDetails) => {
+          //     console.log(orderDetails[0].order);
+          //     // return res.json(orderDetails[0].order);
+          //     let newOrderData = orderDetails[0].order;
+          //     foodOrder.map((item) => {
+          //       let prodId = newOrderData.findIndex(
+          //         (it) => it.foodName === item.foodName
+          //       );
+          //       if (prodId !== -1) {
+          //         newOrderData[prodId].quantity =
+          //           newOrderData[prodId].quantity + item.quantity;
+          //       } else {
+          //         newOrderData = [...newOrderData, item];
+          //       }
+          //     });
+          //     try {
+          //       const finalresult = await Order.findOneAndUpdate({ table: tableId }, {$set:{
+          //         order: newOrderData
+          //       }});
+          //       return "done!!!!!!!!!!";
+          //     } catch (error) {
+          //       console.log(error);
+          //       return res.json(error);
+          //     }
+          //   })
+          //   .catch((err) => console.log(err));
+          // console.log(orderDetails)
