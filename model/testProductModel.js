@@ -6,6 +6,7 @@ const testProductSchema = new Schema({
   name: {
     type: String,
     required: false,
+    unique: true
   },
   status: {
     type: Boolean,
