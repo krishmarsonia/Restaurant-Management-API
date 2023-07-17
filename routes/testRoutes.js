@@ -14,4 +14,8 @@ router.post("/postDeleteTestItem", testController.deleteFoodItem);
 
 router.get("/getId", testController.generateId);
 
+router.get("/firstTest", testController.firsttest)
+
+router.get("/getTestUser", testController.getATestUser);
+
 module.exports = router;

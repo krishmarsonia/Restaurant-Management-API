@@ -42,3 +42,7 @@ console.log(order);
           //   })
           //   .catch((err) => console.log(err));
           // console.log(orderDetails)
+
+
+
+          "test": "jest --watch --testPathPattern=Test"
