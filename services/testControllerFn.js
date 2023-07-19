@@ -20,7 +20,6 @@ exports.testAddingFn = async () => {
 
 exports.getTestUser = async (id) => {
   try {
-    console.log(TestProduct.findById);
     const result = await TestProduct.findById(id);
     return result;
     

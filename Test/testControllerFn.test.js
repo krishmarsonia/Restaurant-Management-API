@@ -5,7 +5,7 @@ const {
   addCallBack,
   addPromise,
   sinonspies,
-} = require("../controllerFunctions/testControllerFn");
+} = require("../services/testControllerFn");
 
 require("dotenv").config();
 
@@ -40,6 +40,8 @@ describe("first of all", () => {
 
     expect(findByIdMock.mock.calls[0][0]).toEqual(id);
     expect(result).toEqual(expected);
+    expect(result).toBeInstanceOf(Array);
+    expect(result).toHaveLength(1)
   });
 
   test("should throw appropriate error when database calls fails", async () => {
@@ -54,6 +56,6 @@ describe("first of all", () => {
     await expect(getTestUser(id)).rejects.toThrow(
       error
     );
-    console.log("done");
+    // console.log("done");
   });
 });

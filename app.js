@@ -25,6 +25,14 @@ app.use(orderRoutes);
 app.use(tableRoutes);
 app.use("/test", testRoutes);
 
+app.use((error, req, res, next) => {
+  const status = error.statusCode || 422;
+  const message = error.message;
+  const err = new Error(message);
+  err.statusCode = status;
+  res.status(status).json({error: {message: err.message, statusCode: err.statusCode}});
+})
+
 if (mongoose.connection.readyState == 0) {
   mongoose
     .connect(process.env.MONGO_URI)

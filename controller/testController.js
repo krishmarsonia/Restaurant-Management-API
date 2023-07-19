@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const TestProduct = require("../model/testProductModel");
-const { testAddingFn, getTestUser } = require("../controllerFunctions/testControllerFn");
+const { testAddingFn, getTestUser } = require("../services/testControllerFn");
 
 exports.testAddProducts = async (req, res, next) => {
   try {

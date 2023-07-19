@@ -1,49 +1,49 @@
 const Product = require("../model/productModel");
 const mongoose = require("mongoose");
+const {
+  addProductService,
+  statusChangeService,
+} = require("../services/productServices");
+const { productFind } = require("../dbServices/productServicesFunctions");
 
-exports.postAddProducts = (req, res, next) => {
-  console.log(req.body);
+exports.postAddProducts = async (req, res, next) => {
   const name = req.body.prodName;
-  const product = new Product({
-    name: name,
-    status: true,
-    items: [],
-  });
-
-  return product
-    .save()
-    .then((result) => {
-      console.log(result.id);
-      res.json({ _id: result.id, name: result.name, status: result.status });
-      // res.json("Hello");
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  try {
+    const result = await addProductService(name);
+    console.log(result);
+    res.json({ _id: result.id, name: result.name, status: result.status });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 422;
+    }
+    return next(error);
+  }
 };
 
-exports.getAllProducts = (req, res, next) => {
-  Product.find()
-    .then((result) => {
-      return res.json(result);
-    })
-    .catch((err) => console.log(err));
+exports.getAllProducts = async (req, res, next) => {
+  try {
+    const result = await productFind();
+    return res.json(result);
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 422;
+    }
+    throw error;
+  }
 };
 
-exports.postStatusChange = (req, res, next) => {
+exports.postStatusChange = async (req, res, next) => {
   const id = req.body.prodId;
   // const status = req.body.data.status;
-  Product.findById(id)
-    .then((prods) => {
-      prods.status = !prods.status;
-      prods
-        .save()
-        .then((prod) => {
-          res.json(id);
-        })
-        .catch((err) => console.log(err));
-    })
-    .catch((err) => console.log(err));
+  try {
+    await statusChangeService(id);
+    res.json(id);
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 422;
+    }
+    throw error;
+  }
 };
 
 exports.postUpdateProductName = (req, res, next) => {
@@ -107,7 +107,7 @@ exports.deleteItem = (req, res, next) => {
     { $pull: { items: { _id: itemId } } }
   )
     .then(() => {
-      res.send({prodId: productId, itemId: itemId})
+      res.send({ prodId: productId, itemId: itemId });
     })
     .catch((err) => console.log(err));
 };
@@ -150,7 +150,11 @@ exports.postStatusItemchange = (req, res, next) => {
   )
     .then((result) => {
       console.log(result);
-      res.send({ prodId: productId.toString(), itemId: itemId.toString(), status: updatedboolvalue });
+      res.send({
+        prodId: productId.toString(),
+        itemId: itemId.toString(),
+        status: updatedboolvalue,
+      });
     })
     .catch((err) => {
       res.send(err);
