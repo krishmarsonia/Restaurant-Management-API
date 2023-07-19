@@ -26,6 +26,7 @@ app.use(tableRoutes);
 app.use("/test", testRoutes);
 
 app.use((error, req, res, next) => {
+  console.log(error)
   const status = error.statusCode || 422;
   const message = error.message;
   const err = new Error(message);

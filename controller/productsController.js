@@ -1,17 +1,26 @@
-const Product = require("../model/productModel");
-const mongoose = require("mongoose");
 const {
   addProductService,
   statusChangeService,
+  AddItemService,
+  updateItemService,
+  itemStatusService,
 } = require("../services/productServices");
-const { productFind } = require("../dbServices/productServicesFunctions");
+const {
+  productFind,
+  productFindByIdAndUpdate,
+  productFindByIdAndDelete,
+} = require("../dbServices/productDBServices");
 
 exports.postAddProducts = async (req, res, next) => {
   const name = req.body.prodName;
   try {
     const result = await addProductService(name);
     console.log(result);
-    res.json({ _id: result.id, name: result.name, status: result.status });
+    return res.json({
+      _id: result.id,
+      name: result.name,
+      status: result.status,
+    });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 422;
@@ -28,135 +37,116 @@ exports.getAllProducts = async (req, res, next) => {
     if (!error.statusCode) {
       error.statusCode = 422;
     }
-    throw error;
+    return next(error);
   }
 };
 
 exports.postStatusChange = async (req, res, next) => {
   const id = req.body.prodId;
-  // const status = req.body.data.status;
   try {
-    await statusChangeService(id);
-    res.json(id);
+    await statusChangeService();
+    return res.json(id);
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 422;
     }
-    throw error;
+    return next(error);
   }
 };
 
-exports.postUpdateProductName = (req, res, next) => {
+exports.postUpdateProductName = async (req, res, next) => {
   const id = req.body.prodId;
   const name = req.body.prodName;
 
-  Product.findByIdAndUpdate({ _id: id }, { name: name })
-    .then((response) => {
-      console.log(response);
-      res.json({ id: id, prodName: name });
-    })
-    .catch((err) => console.log(err));
-
-  // Product.findByIdAndUpdate({ _id: id }, { name: name })
-  //   .then((response) => {
-  //     console.log(response);
-  //     res.json({ status: "suceess" });
-  //   })
-  //   .catch((err) => console.log(err));
+  try {
+    const result = await productFindByIdAndUpdate(id, { name });
+    console.log(result);
+    return res.json({ id, name });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 422;
+    }
+    return next(error);
+  }
 };
 
-exports.deleteProduct = (req, res, next) => {
+exports.deleteProduct = async (req, res, next) => {
   const id = req.body.prodId;
-  // console.log(id);
-  Product.findByIdAndDelete(id)
-    .then((resu) => {
-      console.log(resu);
-      res.json(id);
-    })
-    .catch((err) => console.log(err));
+  try {
+    await productFindByIdAndDelete(id);
+    return res.json(id);
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 422;
+    }
+    return next(error);
+  }
 };
 
-exports.addProductItems = (req, res, next) => {
-  const newItemId = new mongoose.Types.ObjectId();
-  const renewedItemId = newItemId.toString();
+exports.addProductItems = async (req, res, next) => {
   const productId = req.body.prodId;
   const fName = req.body.foodName;
   const price = req.body.price;
-  console.log("------------------------");
-  const itemObj = {
-    _id: renewedItemId,
-    foodName: fName,
-    price: price,
-    status: true,
-  };
-
-  Product.findOneAndUpdate({ _id: productId }, { $push: { items: itemObj } })
-    .then((result) => {
-      console.log(result);
-      return res.json({ _id: productId, dataArray: itemObj });
-    })
-    .catch((err) => console.log(err));
+  try {
+    const result = await AddItemService(productId, fName, price, true);
+    return res.json({ _id: productId, dataArray: result });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 422;
+    }
+    return next(error);
+  }
 };
 
-exports.deleteItem = (req, res, next) => {
+exports.deleteItem = async (req, res, next) => {
   const productId = req.body.prodId;
   const itemId = req.body.itemId;
-
-  Product.findOneAndUpdate(
-    { _id: productId },
-    { $pull: { items: { _id: itemId } } }
-  )
-    .then(() => {
-      res.send({ prodId: productId, itemId: itemId });
-    })
-    .catch((err) => console.log(err));
+  try {
+    await productFindByIdAndUpdate(
+      productId,
+      { items: { _id: itemId } },
+      "$pull"
+    );
+    return res.json({ prodId: productId, itemId: itemId });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 422;
+    }
+    return next(error);
+  }
 };
 
-exports.updateItem = (req, res, next) => {
+exports.updateItem = async (req, res, next) => {
   const productId = req.body.prodId;
   const itemId = req.body.itemId;
   const fname = req.body.foodName;
   const price = req.body.price;
-  Product.updateOne(
-    { _id: productId, "items._id": itemId },
-    {
-      $set: {
-        "items.$.foodName": fname,
-        "items.$.price": price,
-      },
+  try {
+    await updateItemService(productId, itemId, fname, price);
+    return res.json("Updated");
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 422;
     }
-  )
-    .then(() => {
-      console.log("updated");
-      return res.json("updated");
-    })
-    .catch((err) => console.log(err));
+    return next(error);
+  }
 };
 
-exports.postStatusItemchange = (req, res, next) => {
-  const productId = req.body.productId;
+exports.postStatusItemchange = async (req, res, next) => {
+  const productId = req.body.prodId;
   const itemId = req.body.itemId;
   const boolvalue = req.body.status;
-  console.log(boolvalue);
-  const updatedboolvalue = !boolvalue;
-  // res.send({ prodId: productId, itemId: itemId, status: updatedboolvalue });
-  Product.updateOne(
-    { _id: productId, "items._id": itemId },
-    {
-      $set: {
-        "items.$.status": updatedboolvalue,
-      },
-    }
-  )
-    .then((result) => {
-      console.log(result);
-      res.send({
-        prodId: productId.toString(),
-        itemId: itemId.toString(),
-        status: updatedboolvalue,
-      });
-    })
-    .catch((err) => {
-      res.send(err);
+  try {
+    const result = await itemStatusService(productId, itemId, boolvalue);
+    return res.json({
+      prodId: productId.toString(),
+      itemId: itemId.toString(),
+      status: result,
     });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 422;
+    }
+    return next(error);
+  }
 };
